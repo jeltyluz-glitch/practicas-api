@@ -10,7 +10,8 @@ object RickAndMortyMapeadores {
             nombre = dto.name ?: "Desconocido",
             estado = dto.status ?: "Desconocido",
             especie = dto.species ?: "Desconocida",
-            imagen = dto.image ?: ""
+            imagen = dto.image ?: "",
+            isFavorite = false
         )
     }
 

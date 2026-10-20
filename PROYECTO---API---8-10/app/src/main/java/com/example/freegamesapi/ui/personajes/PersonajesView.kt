@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -115,6 +117,15 @@ fun PersonajesView(
                                                 text = "Estado: ${personaje.estado} | Especie: ${personaje.especie}",
                                                 color = mutedTextColor,
                                                 fontSize = 13.sp
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = { viewModel.toggleFavorito(personaje) }
+                                        ) {
+                                            Icon(
+                                                imageVector = if (personaje.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                                contentDescription = "Favorito",
+                                                tint = if (personaje.isFavorite) Color(0xFFEF4444) else mutedTextColor
                                             )
                                         }
                                     }

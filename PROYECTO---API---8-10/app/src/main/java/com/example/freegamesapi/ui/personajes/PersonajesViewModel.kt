@@ -1,12 +1,14 @@
 package com.example.freegamesapi.ui.personajes
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.freegamesapi.data.RickAndMortyRepository
 import com.example.freegamesapi.model.PersonajeModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 sealed interface PersonajesUiState {
@@ -16,24 +18,48 @@ sealed interface PersonajesUiState {
 }
 
 class PersonajesViewModel(
-    private val repository: RickAndMortyRepository = RickAndMortyRepository()
-) : ViewModel() {
+    application: Application
+) : AndroidViewModel(application) {
+    private val repository = RickAndMortyRepository(application)
+
     private val _uiState = MutableStateFlow<PersonajesUiState>(PersonajesUiState.Loading)
     val uiState: StateFlow<PersonajesUiState> = _uiState.asStateFlow()
 
     init {
-        cargarPersonajes()
+        observarPersonajes()
+        sincronizarDatos()
     }
 
-    fun cargarPersonajes() {
+    private fun observarPersonajes() {
         viewModelScope.launch {
-            _uiState.value = PersonajesUiState.Loading
+            repository.personajesFlow
+                .catch { e ->
+                    _uiState.value = PersonajesUiState.Error("Error al observar base de datos: ${e.message}")
+                }
+                .collect { lista ->
+                    _uiState.value = PersonajesUiState.Success(lista)
+                }
+        }
+    }
+
+    fun sincronizarDatos() {
+        viewModelScope.launch {
             try {
-                val lista = repository.obtenerPersonajes()
-                _uiState.value = PersonajesUiState.Success(lista)
+                if (repository.contarLocal() == 0) {
+                    _uiState.value = PersonajesUiState.Loading
+                }
+                repository.refrescarPersonajes()
             } catch (e: Exception) {
-                _uiState.value = PersonajesUiState.Error("Error al cargar personajes: ${e.message}")
+                if (repository.contarLocal() == 0) {
+                    _uiState.value = PersonajesUiState.Error("Error de red: ${e.message}")
+                }
             }
+        }
+    }
+
+    fun toggleFavorito(personaje: PersonajeModel) {
+        viewModelScope.launch {
+            repository.toggleFavorito(personaje.id, personaje.isFavorite)
         }
     }
 }
