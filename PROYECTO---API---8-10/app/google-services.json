@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "827680882793",
+    "project_id": "favoritos-19a8a",
+    "storage_bucket": "favoritos-19a8a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:827680882793:android:c654ff6a9f65552f03e2f8",
+        "android_client_info": {
+          "package_name": "com.ariel.freegames"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4wI4QEE3YdLBZgltb9ibNR1LjAYdw1eQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

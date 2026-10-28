@@ -5,14 +5,18 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SportsEsports
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,10 +27,10 @@ fun LoginView(
     viewModel: LoginViewModel = viewModel(),
     onLoginSuccess: () -> Unit
 ) {
-    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
 
-    LaunchedEffect(isLoggedIn) {
-        if (isLoggedIn) {
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
             onLoginSuccess()
         }
     }
@@ -71,7 +75,7 @@ fun LoginView(
 
             // Title
             Text(
-                text = "Iniciar sesión",
+                text = if (viewModel.isRegisterMode) "Crear cuenta" else "Iniciar sesión",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = textColor
@@ -81,14 +85,49 @@ fun LoginView(
 
             // Subtitle
             Text(
-                text = "Accede para descubrir juegos gratuitos y guardar tus favoritos.",
+                text = if (viewModel.isRegisterMode) "Regístrate para acceder a tus juegos y favoritos." else "Accede para descubrir juegos gratuitos y guardar tus favoritos.",
                 fontSize = 14.sp,
                 color = mutedTextColor,
                 modifier = Modifier.padding(horizontal = 16.dp),
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // UI State message
+            when (val state = viewModel.uiState) {
+                is AuthUiState.Error -> {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFF7F1D1D)
+                    ) {
+                        Text(
+                            text = state.message,
+                            color = Color.White,
+                            modifier = Modifier.padding(12.dp),
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                is AuthUiState.Success -> {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFF065F46)
+                    ) {
+                        Text(
+                            text = state.message,
+                            color = Color.White,
+                            modifier = Modifier.padding(12.dp),
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                else -> {}
+            }
 
             // Card container
             Surface(
@@ -138,10 +177,19 @@ fun LoginView(
                     OutlinedTextField(
                         value = viewModel.password,
                         onValueChange = { viewModel.onPasswordChange(it) },
-                        placeholder = { Text("Escribe cualquier contraseña", color = mutedTextColor) },
+                        placeholder = { Text("Mínimo 6 caracteres", color = mutedTextColor) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        visualTransformation = PasswordVisualTransformation(),
+                        visualTransformation = if (viewModel.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { viewModel.togglePasswordVisibility() }) {
+                                Icon(
+                                    imageVector = if (viewModel.passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = "Toggle password visibility",
+                                    tint = mutedTextColor
+                                )
+                            }
+                        },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = fieldBackground,
                             unfocusedContainerColor = fieldBackground,
@@ -156,9 +204,9 @@ fun LoginView(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Login Button
+                    // Submit Button
                     Button(
-                        onClick = { viewModel.login() },
+                        onClick = { viewModel.submit() },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
@@ -166,22 +214,54 @@ fun LoginView(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = primaryPurple,
                             contentColor = Color(0xFF0F0F13)
-                        )
+                        ),
+                        enabled = viewModel.uiState !is AuthUiState.Loading
                     ) {
-                        Text(
-                            text = "Iniciar sesión",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        if (viewModel.uiState is AuthUiState.Loading) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color(0xFF0F0F13))
+                        } else {
+                            Text(
+                                text = if (viewModel.isRegisterMode) "Registrarse" else "Iniciar sesión",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Toggle mode & Forgot password
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(onClick = { viewModel.toggleAuthMode() }) {
+                            Text(
+                                text = if (viewModel.isRegisterMode) "¿Ya tienes cuenta? Inicia sesión" else "¿No tienes cuenta? Regístrate",
+                                color = primaryPurple,
+                                fontSize = 12.sp
+                            )
+                        }
+
+                        if (!viewModel.isRegisterMode) {
+                            TextButton(onClick = { viewModel.recuperarContrasena() }) {
+                                Text(
+                                    text = "¿Olvidaste tu contraseña?",
+                                    color = mutedTextColor,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             // Footer
             Text(
-                text = "FreeGames Finder · Juegos gratuitos para PC",
+                text = "FreeGames Finder · Firebase Auth",
                 fontSize = 12.sp,
                 color = mutedTextColor
             )

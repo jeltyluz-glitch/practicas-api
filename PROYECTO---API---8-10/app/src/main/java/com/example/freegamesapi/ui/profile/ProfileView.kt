@@ -21,7 +21,8 @@ import java.util.Locale
 
 @Composable
 fun ProfileView(
-    usuario: Usuario = Usuario(1048, "Alex Lara", "alex.lara@email.com")
+    usuario: Usuario = Usuario(1048, "Alex Lara", "alex.lara@email.com"),
+    onCerrarSesion: () -> Unit = {}
 ) {
     val backgroundColor = Color(0xFF0F0F13)
     val cardColor = Color(0xFF181820)
@@ -239,7 +240,6 @@ fun ProfileView(
                 modifier = Modifier.padding(bottom = 4.dp)
             )
 
-            // Preference Card 1: Plataforma principal
             PreferenceItemCard(
                 label = "Plataforma principal",
                 value = "PC (Windows)",
@@ -262,7 +262,6 @@ fun ProfileView(
                 }
             }
 
-            // Preference Card 2: Géneros favoritos
             PreferenceItemCard(
                 label = "Géneros favoritos",
                 value = "Shooter y MMORPG",
@@ -300,6 +299,27 @@ fun ProfileView(
                     }
                 }
             }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Logout Button
+        Button(
+            onClick = onCerrarSesion,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF7F1D1D),
+                contentColor = Color.White
+            )
+        ) {
+            Text(
+                text = "Cerrar sesión",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

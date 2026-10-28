@@ -1,0 +1,5 @@
+- `[x]` 1. Actualizar `RetrofitClient.kt` con interceptor Bearer y base URL de SQLite Cloud WebLite
+- `[x]` 2. Actualizar `CloudApiService.kt` con los modelos `SqlRequest`/`SqlResponse` y método `ejecutarSql`
+- `[x]` 3. Reescribir `RickAndMortyRepository.kt` para consultar y actualizar directamente SQLite Cloud mediante SQL
+- `[x]` 4. Eliminar `PersonajeDbHelper.kt`
+- `[x]` 5. Compilar y verificar con Gradle build

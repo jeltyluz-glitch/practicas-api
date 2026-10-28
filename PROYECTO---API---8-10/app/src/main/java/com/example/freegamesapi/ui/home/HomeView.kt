@@ -41,6 +41,8 @@ import com.example.freegamesapi.ui.personajes.PersonajesView
 import com.example.freegamesapi.ui.poke.PokeView
 import com.example.freegamesapi.ui.profile.ProfileView
 import com.example.freegamesapi.ui.trivia.TriviaView
+import com.example.freegamesapi.data.AuthRepository
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeView(
@@ -48,6 +50,8 @@ fun HomeView(
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val usuario = remember { Usuario(1048, "Alex Lara", "alex.lara@email.com") }
+    val coroutineScope = rememberCoroutineScope()
+    val authRepository = remember { AuthRepository() }
     val uiState by viewModel.uiState.collectAsState()
 
     val backgroundColor = Color(0xFF0F0F13)
@@ -463,7 +467,14 @@ fun HomeView(
                     FavoritesView(usuario = usuario)
                 }
                 5 -> {
-                    ProfileView(usuario = usuario)
+                    ProfileView(
+                        usuario = usuario,
+                        onCerrarSesion = {
+                            coroutineScope.launch {
+                                authRepository.cerrarSesion()
+                            }
+                        }
+                    )
                 }
             }
         }

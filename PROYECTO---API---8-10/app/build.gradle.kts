@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -10,7 +11,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.freegamesapi"
+        applicationId = "com.ariel.freegames"
         minSdk = 24
         targetSdk = 37
         versionCode = 1
@@ -51,6 +52,12 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp.logging)
+
+    // Firebase BoM & Analytics & Auth
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

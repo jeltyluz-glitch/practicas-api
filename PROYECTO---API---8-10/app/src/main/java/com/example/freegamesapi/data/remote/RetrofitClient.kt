@@ -56,4 +56,24 @@ object RetrofitClient {
     val rickAndMortyApi: RickAndMortyApiService by lazy {
         createService("https://rickandmortyapi.com/api/")
     }
+
+    // 7. SQLite Cloud WebLite REST API (Directo a la nube con Bearer Token)
+    val cloudApi: CloudApiService by lazy {
+        val sqliteCloudClient = OkHttpClient.Builder()
+            .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+            .addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .addHeader("Authorization", "Bearer fsz2bQKYtLjas7dyRbwqP9B8q61LRuL86MQhuaa4xW4")
+                    .build()
+                chain.proceed(request)
+            }
+            .build()
+
+        Retrofit.Builder()
+            .baseUrl("https://caqqbdkqdk.g4.sqlite.cloud/")
+            .client(sqliteCloudClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(CloudApiService::class.java)
+    }
 }
